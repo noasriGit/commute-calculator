@@ -1,0 +1,140 @@
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const $ = id => document.getElementById(id);
+
+  function safeNum(elId, defaultVal = 0) {
+    const el = $(elId);
+    if (!el) return defaultVal;
+    const v = parseFloat(el.value);
+    return isNaN(v) ? defaultVal : v;
+  }
+
+  function formatMoney(v) {
+    if (isNaN(v)) return '$0.00';
+    return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatKg(g) {
+    if (isNaN(g)) return '0 kg';
+    return (g / 1000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' kg';
+  }
+
+  function computeAll() {
+    try {
+      const oneWay = safeNum('distance', 0);
+      const days = safeNum('days', 0);
+      const weeks = safeNum('weeks', 0);
+      const totalDays = days * weeks;
+      const totalMiles = (oneWay * 2) * totalDays;
+
+      // Car inputs
+      const carMpg = Math.max(1, safeNum('carMpg', 25));
+      const gasPrice = safeNum('gasPrice', 3.70);
+      const parkingPerDay = safeNum('parkingPerDay', 0);
+      const carMaintPerMile = safeNum('carMaint', 0.12);
+
+      const gallons = totalMiles / carMpg;
+      const fuelCost = gallons * gasPrice;
+      const parkingCost = parkingPerDay * totalDays;
+      const carMaint = totalMiles * carMaintPerMile;
+      const carAnnualCost = fuelCost + parkingCost + carMaint;
+
+      // E-bike inputs
+      const whPerMile = safeNum('whPerMile', 20);
+      const kwhPrice = safeNum('kwhPrice', 0.15);
+      const ebikePrice = safeNum('ebikePrice', 2200);
+      const ebikeLife = Math.max(1, safeNum('ebikeLifespan', 5));
+      const batteryCost = safeNum('batteryCost', 500);
+      const batteryLife = Math.max(1, safeNum('batteryLife', 4));
+      const ebikeMaintPerMile = safeNum('ebikeMaint', 0.03);
+
+      const energyKWh = (totalMiles * whPerMile) / 1000;
+      const elecCost = energyKWh * kwhPrice;
+      const batteryAnnual = batteryCost / batteryLife;
+      const ebikeAnnualDep = ebikePrice / ebikeLife;
+      const ebikeMaint = totalMiles * ebikeMaintPerMile;
+      const ebikeAnnualCost = elecCost + batteryAnnual + ebikeAnnualDep + ebikeMaint;
+
+      // CO2
+      const gasCO2 = safeNum('gasCO2', 8887);
+      const elecCO2 = safeNum('elecCO2', 400);
+
+      const carCO2g = gallons * gasCO2;
+      const ebikeCO2g = energyKWh * elecCO2;
+
+      // Results
+      const annualSavings = carAnnualCost - ebikeAnnualCost;
+      const paybackYears = (annualSavings > 0) ? (ebikePrice / annualSavings) : null;
+
+      // Write outputs (defensive)
+      const cCost = $('carCost'); if (cCost) cCost.textContent = formatMoney(carAnnualCost);
+      const cBreak = $('carBreakdown'); if (cBreak) cBreak.innerHTML = `
+        Fuel ${formatMoney(fuelCost)} • Parking ${formatMoney(parkingCost)} • Maintenance ${formatMoney(carMaint)}<br>
+        Mileage ${isNaN(totalMiles) ? 0 : totalMiles.toLocaleString()} miles • ${isNaN(gallons) ? 0 : gallons.toLocaleString(undefined,{maximumFractionDigits:1})} gal/year
+      `;
+      const eCost = $('ebikeCost'); if (eCost) eCost.textContent = formatMoney(ebikeAnnualCost);
+      const eBreak = $('ebikeBreakdown'); if (eBreak) eBreak.innerHTML = `
+        Electricity ${formatMoney(elecCost)} • Battery ${formatMoney(batteryAnnual)} • Depreciation ${formatMoney(ebikeAnnualDep)} • Maintenance ${formatMoney(ebikeMaint)}<br>
+        Energy ${isNaN(energyKWh) ? 0 : energyKWh.toLocaleString(undefined,{maximumFractionDigits:1})} kWh/year
+      `;
+      const save = $('annualSavings'); if (save) save.textContent = formatMoney(annualSavings);
+      const pay = $('payback'); if (pay) pay.textContent = paybackYears ? `Approx payback: ${paybackYears.toFixed(1)} years` : 'No payback (e-bike costs more)';
+      const co2d = $('co2Diff'); const co2b = $('co2Breakdown');
+      const diff = carCO2g - ebikeCO2g;
+      if (co2d) co2d.textContent = (diff >= 0 ? '+' : '-') + formatKg(Math.abs(diff));
+      if (co2b) co2b.textContent = `Car ${formatKg(carCO2g)} • E-bike ${formatKg(ebikeCO2g)}`;
+
+      // Save last result
+      window._lastCalc = {
+        totalMiles, carAnnualCost, ebikeAnnualCost, annualSavings, paybackYears, carCO2g, ebikeCO2g,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (err) {
+      console.error('Calculation error', err);
+      alert('Calculation error (see console): ' + err.message);
+    }
+  }
+
+  // Attach handlers
+  const computeBtn = $('compute');
+  if (!computeBtn) {
+    console.error('Compute button not found (id="compute")');
+    return;
+  }
+  computeBtn.addEventListener('click', computeAll);
+
+  const exportBtn = $('exportCsv');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function(){
+      if (!window._lastCalc) { alert('Calculate first'); return; }
+      const r = window._lastCalc;
+      const headers = ['timestamp','totalMiles','carAnnualCost','ebikeAnnualCost','annualSavings','paybackYears','carCO2g','ebikeCO2g'];
+      const vals = [r.timestamp, r.totalMiles, r.carAnnualCost, r.ebikeAnnualCost, r.annualSavings, r.paybackYears, r.carCO2g, r.ebikeCO2g];
+      const csv = headers.join(',') + '\n' + vals.map(v => (v === null ? '' : String(v))).join(',');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'commute_calc.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+  }
+
+  const shareBtn = $('shareBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', function(){
+      if (!window._lastCalc) { alert('Calculate first'); return; }
+      const r = window._lastCalc;
+      const text = `I could save ${formatMoney(r.annualSavings)}/yr and reduce CO₂ by ${formatKg(r.carCO2g - r.ebikeCO2g)} by switching to an e-bike (Ebike Connections).`;
+      const url = location.href + '#saved=' + encodeURIComponent(String(Math.round(r.annualSavings)));
+      if (navigator.share) {
+        navigator.share({ title:'E-bike savings', text, url }).catch(()=>{});
+      } else {
+        window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text + ' ' + url), '_blank');
+      }
+    });
+  }
+
+  // initial compute
+  computeAll();
+  console.log('Commute calculator ready');
+});
+</script>
