@@ -1,184 +1,504 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Commute Cost & CO₂ Savings Calculator — Ebike Connections</title>
-<meta name="description" content="Compare annual cost and CO₂ savings for switching from a car to an electric bike. Calculate payback, energy use, and yearly savings."/>
-<style>
-  :root{--brand:#0b6d4b;--muted:#666;--bg:#f8faf8;--card:#fff}
-  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; margin:0;background:var(--bg);color:#111;}
-  .wrap{max-width:980px;margin:28px auto;padding:20px}
-  h1{color:var(--brand);margin:0 0 8px;font-size:1.5rem}
-  p.lead{color:var(--muted);margin:0 0 20px}
-  .grid{display:grid;grid-template-columns:1fr;gap:16px}
-  @media(min-width:880px){.grid{grid-template-columns:420px 1fr}}
-  .card{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 18px rgba(16,24,32,0.06)}
-  label{display:block;font-weight:600;font-size:0.9rem;margin-bottom:6px}
-  .field{margin-bottom:12px}
-  input[type="number"],select{width:100%;padding:8px 10px;border:1px solid #d6e0da;border-radius:6px;font-size:0.95rem}
-  .row{display:flex;gap:8px}
-  .row > *{flex:1}
-  .muted{color:var(--muted);font-size:0.9rem}
-  button{background:var(--brand);color:#fff;border:0;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
-  .out{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .metric{padding:12px;border-radius:8px;background:#fbfffb;border:1px solid #ecf5ee}
-  .metric h3{margin:0 0 6px;font-size:0.95rem}
-  .big{font-size:1.25rem;font-weight:700;color:#0b513b}
-  .small{font-size:0.9rem;color:var(--muted)}
-  .cta{display:flex;gap:8px;flex-wrap:wrap}
-  .share{background:#eef7f2;color:var(--brand);border:1px solid #d6efe0;padding:8px 10px;border-radius:8px}
-  .export{background:#fff;border:1px solid #ddd;color:#333;padding:8px 10px;border-radius:8px}
-  footer{margin-top:18px;color:var(--muted);font-size:0.9rem}
-  code{background:#f6f8f6;padding:2px 6px;border-radius:4px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Commute Cost & CO₂ Savings Calculator — Ebike Connections</title>
+  <meta name="description" content="Compare annual cost and CO₂ savings for switching from a car to an electric bike. Calculate payback, energy use, and yearly savings." />
+
+  <style>
+    :root{
+      --brand:#0b6d4b;
+      --brand-2:#0b513b;
+      --muted:#667085;
+      --bg:#f6faf7;
+      --card:#ffffff;
+      --border:#e7f2ea;
+      --shadow: 0 10px 28px rgba(16,24,32,0.08);
+      --radius:14px;
+      --focus: 0 0 0 4px rgba(11,109,75,0.18);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+      background:var(--bg);
+      color:#101828;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+
+    /* Works nicely inside iframes */
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 22px;
+    }
+
+    .hero{
+      padding: 14px 2px 10px;
+    }
+
+    h1{
+      margin:0 0 8px;
+      font-size: 1.35rem;
+      line-height:1.2;
+      color:var(--brand);
+      letter-spacing:-0.02em;
+    }
+
+    .lead{
+      margin:0;
+      color:var(--muted);
+      font-size: 0.98rem;
+      line-height:1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media(min-width: 900px){
+      .wrap{padding: 24px 18px 28px;}
+      h1{font-size:1.55rem}
+      .grid{grid-template-columns: 420px 1fr; gap: 16px;}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    @media(min-width: 900px){
+      .card{padding:16px}
+    }
+
+    /* Results-first on mobile */
+    .formCard{order:2}
+    .resultsCard{order:1}
+    @media(min-width: 900px){
+      .formCard{order:1}
+      .resultsCard{order:2}
+    }
+
+    /* Form */
+    form{margin:0}
+    .sectionTitle{
+      font-weight:800;
+      font-size: 0.95rem;
+      color: var(--brand-2);
+      margin: 2px 0 10px;
+    }
+
+    .field{margin-bottom: 12px;}
+    label{
+      display:block;
+      font-weight:700;
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+    }
+
+    .help{
+      margin-top:6px;
+      font-size:0.88rem;
+      color:var(--muted);
+      line-height:1.25;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+    }
+    .row > *{flex:1}
+
+    input[type="number"], select{
+      width:100%;
+      border:1px solid #dbe8df;
+      border-radius: 10px;
+      padding: 12px 12px;
+      font-size: 16px; /* avoid iOS zoom */
+      outline:none;
+      background:#fff;
+    }
+    input[type="number"]:focus, select:focus{
+      border-color: rgba(11,109,75,0.55);
+      box-shadow: var(--focus);
+    }
+
+    /* Collapsible advanced */
+    details{
+      border:1px solid var(--border);
+      border-radius: 12px;
+      background:#fbfffb;
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+    summary{
+      cursor:pointer;
+      font-weight:800;
+      color:var(--brand-2);
+      list-style:none;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    summary::-webkit-details-marker{display:none}
+    summary .chev{font-weight:900;color:var(--brand)}
+    details[open] summary .chev{transform: rotate(180deg)}
+    .advNote{
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height:1.25;
+    }
+
+    .divider{
+      border:none;
+      border-top:1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    /* Buttons */
+    .cta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    button{
+      border:0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 800;
+      cursor:pointer;
+      font-size: 1rem;
+      line-height:1;
+      transition: transform 0.04s ease;
+      touch-action: manipulation;
+    }
+    button:active{transform: scale(0.99)}
+    .btnPrimary{
+      background:var(--brand);
+      color:#fff;
+      flex: 1 1 180px;
+    }
+    .btnSecondary{
+      background:#fff;
+      color:#1d2939;
+      border:1px solid #dbe8df;
+      flex: 1 1 140px;
+    }
+
+    /* Sticky bar for iframe/mobile */
+    .stickyBar{
+      position: sticky;
+      bottom: 0;
+      padding-top: 12px;
+      background: linear-gradient(to top, rgba(246,250,247,0.98), rgba(246,250,247,0));
+      margin-top: 10px;
+      display:none;
+    }
+    @media(max-width: 520px){
+      .row{flex-direction:column; gap:0}
+      .cta button{width:100%}
+      .stickyBar{display:block}
+      .card{padding: 12px}
+    }
+
+    /* Results */
+    .resultsHeader{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .resultsHeader h2{
+      margin:0;
+      font-size: 1.05rem;
+      color:#111827;
+      letter-spacing:-0.01em;
+    }
+    .pill{
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background:#eef7f2;
+      color: var(--brand);
+      border: 1px solid #d6efe0;
+      white-space:nowrap;
+    }
+
+    .out{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media(min-width: 560px){
+      .out{grid-template-columns: 1fr 1fr;}
+    }
+
+    .metric{
+      padding: 12px;
+      border-radius: 12px;
+      background:#fbfffb;
+      border:1px solid var(--border);
+      min-height: 118px;
+    }
+    .metric h3{
+      margin:0 0 8px;
+      font-size:0.93rem;
+      color:#111827;
+    }
+    .big{
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--brand-2);
+      letter-spacing:-0.02em;
+      margin-bottom: 6px;
+    }
+    .small{
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height:1.25;
+    }
+
+    .note{
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height:1.3;
+    }
+
+    .error{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid #ffd7d7;
+      background:#fff3f3;
+      color:#7a1b1b;
+      font-weight:700;
+      font-size:0.92rem;
+      line-height:1.25;
+    }
+
+    .srOnly{
+      position:absolute;
+      width:1px;height:1px;
+      padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <h1>Commute Cost & CO₂ Savings Calculator</h1>
-  <p class="lead">Enter your commute details to see annual money & emissions savings when you switch from a car to an e-bike.</p>
+  <div class="wrap">
+    <header class="hero">
+      <h1>Commute Cost & CO₂ Savings Calculator</h1>
+      <p class="lead">See how much you could save each year by switching from a car to an e-bike — plus the estimated CO₂ impact.</p>
+    </header>
 
-  <div class="grid">
-    <div class="card">
-      <form id="calcForm" aria-label="Commute savings form">
-        <div class="field">
-          <label for="distance">One-way commute distance (miles)</label>
-          <input id="distance" type="number" step="0.1" min="0" value="8" />
+    <div class="grid">
+      <!-- RESULTS (shown first on mobile) -->
+      <section class="card resultsCard" aria-live="polite">
+        <div class="resultsHeader">
+          <h2>Your results</h2>
+          <div class="pill" id="summaryPill">Ready</div>
         </div>
 
-        <div class="row">
-          <div class="field">
-            <label for="days">Days commuting per week</label>
-            <input id="days" type="number" min="0" max="7" value="5" />
+        <div class="out">
+          <div class="metric">
+            <h3>Annual savings</h3>
+            <div class="big" id="annualSavings">$0.00</div>
+            <div class="small" id="payback">—</div>
           </div>
-          <div class="field">
-            <label for="weeks">Weeks per year</label>
-            <input id="weeks" type="number" min="1" max="52" value="48" />
+
+          <div class="metric">
+            <h3>CO₂ difference</h3>
+            <div class="big" id="co2Diff">0 kg</div>
+            <div class="small" id="co2Breakdown">—</div>
+          </div>
+
+          <div class="metric">
+            <h3>Car annual cost</h3>
+            <div class="big" id="carCost">$0.00</div>
+            <div class="small" id="carBreakdown">—</div>
+          </div>
+
+          <div class="metric">
+            <h3>E-bike annual cost</h3>
+            <div class="big" id="ebikeCost">$0.00</div>
+            <div class="small" id="ebikeBreakdown">—</div>
           </div>
         </div>
 
-        <hr style="margin:12px 0;border:none;border-top:1px solid #eef6ee"/>
-
-        <label style="margin-bottom:8px">Car assumptions</label>
-        <div class="field">
-          <label for="carMpg">Car fuel economy (MPG)</label>
-          <input id="carMpg" type="number" step="0.1" min="1" value="25" />
+        <div class="note">
+          Tip: Start with the basic commute fields. Only adjust “Advanced assumptions” if you want to fine-tune the estimate.
         </div>
-        <div class="row">
+
+        <div class="error" id="errBox" role="alert"></div>
+      </section>
+
+      <!-- FORM -->
+      <section class="card formCard">
+        <form id="calcForm" aria-label="Commute savings form">
+          <div class="sectionTitle">Basics</div>
+
           <div class="field">
-            <label for="gasPrice">Gas price ($ / gallon)</label>
-            <input id="gasPrice" type="number" step="0.01" min="0" value="3.70" />
+            <label for="distance">One-way commute distance (miles)</label>
+            <input id="distance" type="number" inputmode="decimal" step="0.1" min="0" value="8" />
+            <div class="help">Example: 8 miles one way → 16 miles/day.</div>
           </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="days">Days per week</label>
+              <input id="days" type="number" inputmode="numeric" min="0" max="7" value="5" />
+            </div>
+            <div class="field">
+              <label for="weeks">Weeks per year</label>
+              <input id="weeks" type="number" inputmode="numeric" min="1" max="52" value="48" />
+            </div>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="sectionTitle">Quick car info</div>
+
+          <div class="row">
+            <div class="field">
+              <label for="carMpg">Car MPG</label>
+              <input id="carMpg" type="number" inputmode="decimal" step="0.1" min="1" value="25" />
+            </div>
+            <div class="field">
+              <label for="gasPrice">Gas ($/gallon)</label>
+              <input id="gasPrice" type="number" inputmode="decimal" step="0.01" min="0" value="3.70" />
+            </div>
+          </div>
+
           <div class="field">
             <label for="parkingPerDay">Parking / tolls per day ($)</label>
-            <input id="parkingPerDay" type="number" step="0.1" min="0" value="2" />
+            <input id="parkingPerDay" type="number" inputmode="decimal" step="0.1" min="0" value="2" />
           </div>
-        </div>
-        <div class="field">
-          <label for="carMaint">Car maintenance ($ / mile)</label>
-          <input id="carMaint" type="number" step="0.01" min="0" value="0.12" />
-          <div class="muted">This excludes fuel (use ~0.10–0.20)</div>
-        </div>
 
-        <hr style="margin:12px 0;border:none;border-top:1px solid #eef6ee"/>
+          <!-- Advanced Assumptions -->
+          <details>
+            <summary>
+              Advanced assumptions
+              <span class="chev">▾</span>
+            </summary>
+            <p class="advNote">Optional. Use these to fine-tune maintenance, energy use, and emissions assumptions.</p>
 
-        <label style="margin-bottom:8px">E-bike assumptions</label>
-        <div class="row">
-          <div class="field">
-            <label for="whPerMile">Energy (Wh per mile)</label>
-            <input id="whPerMile" type="number" step="1" min="1" value="20" />
-            <div class="muted">Typical: 15–30 Wh/mi</div>
+            <div class="sectionTitle" style="margin-top:10px;">Car assumptions</div>
+            <div class="field">
+              <label for="carMaint">Car maintenance ($ / mile)</label>
+              <input id="carMaint" type="number" inputmode="decimal" step="0.01" min="0" value="0.12" />
+              <div class="help">Excludes fuel. Typical: 0.10–0.20</div>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="sectionTitle">E-bike assumptions</div>
+            <div class="row">
+              <div class="field">
+                <label for="whPerMile">Energy (Wh / mile)</label>
+                <input id="whPerMile" type="number" inputmode="numeric" step="1" min="1" value="20" />
+                <div class="help">Typical: 15–30 Wh/mi</div>
+              </div>
+              <div class="field">
+                <label for="kwhPrice">Electricity ($ / kWh)</label>
+                <input id="kwhPrice" type="number" inputmode="decimal" step="0.01" min="0" value="0.15" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="ebikePrice">E-bike price ($)</label>
+                <input id="ebikePrice" type="number" inputmode="numeric" step="1" min="0" value="2200" />
+              </div>
+              <div class="field">
+                <label for="ebikeLifespan">E-bike lifespan (years)</label>
+                <input id="ebikeLifespan" type="number" inputmode="numeric" min="1" value="5" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label for="batteryCost">Battery replacement ($)</label>
+                <input id="batteryCost" type="number" inputmode="numeric" step="1" min="0" value="500" />
+              </div>
+              <div class="field">
+                <label for="batteryLife">Battery lifespan (years)</label>
+                <input id="batteryLife" type="number" inputmode="numeric" min="1" value="4" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="ebikeMaint">E-bike maintenance ($ / mile)</label>
+              <input id="ebikeMaint" type="number" inputmode="decimal" step="0.01" min="0" value="0.03" />
+            </div>
+
+            <hr class="divider" />
+
+            <div class="sectionTitle">CO₂ assumptions</div>
+            <div class="row">
+              <div class="field">
+                <label for="gasCO2">Gas CO₂ (g / gallon)</label>
+                <input id="gasCO2" type="number" inputmode="numeric" step="1" min="0" value="8887" />
+                <div class="help">US EPA default ≈ 8.887 kg/gallon</div>
+              </div>
+              <div class="field">
+                <label for="elecCO2">Electricity CO₂ (g / kWh)</label>
+                <input id="elecCO2" type="number" inputmode="numeric" step="1" min="0" value="400" />
+                <div class="help">US mix varies by region</div>
+              </div>
+            </div>
+          </details>
+
+          <div class="cta" aria-label="actions">
+            <button class="btnPrimary" id="compute" type="button">Calculate</button>
+            <button class="btnSecondary" id="exportCsv" type="button">Export CSV</button>
           </div>
-          <div class="field">
-            <label for="kwhPrice">Electricity ($ / kWh)</label>
-            <input id="kwhPrice" type="number" step="0.01" min="0" value="0.15" />
+
+          <!-- Sticky bar to avoid scrolling inside iframes on mobile -->
+          <div class="stickyBar">
+            <button class="btnPrimary" id="computeSticky" type="button">Calculate Savings</button>
           </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="ebikePrice">E-bike purchase price ($)</label>
-            <input id="ebikePrice" type="number" step="1" min="0" value="2200" />
-          </div>
-          <div class="field">
-            <label for="ebikeLifespan">E-bike lifespan (years)</label>
-            <input id="ebikeLifespan" type="number" min="1" value="5" />
-          </div>
-        </div>
-        <div class="row">
-          <div class="field">
-            <label for="batteryCost">Battery replacement ($)</label>
-            <input id="batteryCost" type="number" step="1" min="0" value="500" />
-          </div>
-          <div class="field">
-            <label for="batteryLife">Battery lifespan (years)</label>
-            <input id="batteryLife" type="number" min="1" value="4" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="ebikeMaint">E-bike maintenance ($ / mile)</label>
-          <input id="ebikeMaint" type="number" step="0.01" min="0" value="0.03" />
-        </div>
 
-        <hr style="margin:12px 0;border:none;border-top:1px solid #eef6ee"/>
-
-        <label style="margin-bottom:8px">CO₂ assumptions</label>
-        <div class="row">
-          <div class="field">
-            <label for="gasCO2">Gas CO₂ (g / gallon)</label>
-            <input id="gasCO2" type="number" step="1" min="0" value="8887" />
-            <div class="muted">US EPA default ~8.887 kg CO₂/gallon</div>
-          </div>
-          <div class="field">
-            <label for="elecCO2">Electricity CO₂ (g / kWh)</label>
-            <input id="elecCO2" type="number" step="1" min="0" value="400" />
-            <div class="muted">Default: US regional mix (~400 g/kWh)</div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px" class="cta">
-          <button id="compute" type="button">Calculate</button>
-          <button id="exportCsv" type="button" class="export">Export CSV</button>
-          
-        </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <div class="out" aria-live="polite">
-        <div class="metric" id="carOutput">
-          <h3>Car — Annual cost</h3>
-          <div class="big" id="carCost">$0</div>
-          <div class="small" id="carBreakdown"></div>
-        </div>
-
-        <div class="metric" id="ebikeOutput">
-          <h3>E-bike — Annual cost</h3>
-          <div class="big" id="ebikeCost">$0</div>
-          <div class="small" id="ebikeBreakdown"></div>
-        </div>
-
-        <div class="metric" id="savingsOutput">
-          <h3>Annual savings</h3>
-          <div class="big" id="annualSavings">$0</div>
-          <div class="small" id="payback"></div>
-        </div>
-
-        <div class="metric" id="co2Output">
-          <h3>Annual CO₂</h3>
-          <div class="big" id="co2Diff">0 kg</div>
-          <div class="small" id="co2Breakdown"></div>
-        </div>
-      </div>
-
-      
+          <div class="srOnly" aria-live="polite" id="srStatus"></div>
+        </form>
+      </section>
     </div>
   </div>
-</div>
 
-<!-- Calculator script (runs inside this page) -->
 <script>
 (function(){
-  const $ = id => document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
+  const errBox = $('errBox');
+  const srStatus = $('srStatus');
+  const pill = $('summaryPill');
+
+  function showError(msg){
+    if (!errBox) return;
+    errBox.style.display = 'block';
+    errBox.textContent = msg;
+  }
+  function clearError(){
+    if (!errBox) return;
+    errBox.style.display = 'none';
+    errBox.textContent = '';
+  }
 
   function safeNum(elId, defaultVal = 0) {
     const el = $(elId);
@@ -198,10 +518,21 @@
   }
 
   function computeAll() {
+    clearError();
+
     try {
       const oneWay = safeNum('distance', 0);
       const days = safeNum('days', 0);
       const weeks = safeNum('weeks', 0);
+
+      // Basic validation (friendly)
+      if (oneWay <= 0 || days <= 0 || weeks <= 0){
+        showError('Enter your distance, days/week, and weeks/year to calculate.');
+        if (pill) pill.textContent = 'Waiting for inputs';
+        if (srStatus) srStatus.textContent = 'Waiting for inputs';
+        return;
+      }
+
       const totalDays = days * weeks;
       const totalMiles = (oneWay * 2) * totalDays;
 
@@ -211,7 +542,7 @@
       const parkingPerDay = safeNum('parkingPerDay', 0);
       const carMaintPerMile = safeNum('carMaint', 0.12);
 
-      const gallons = (carMpg > 0) ? (totalMiles / carMpg) : 0;
+      const gallons = totalMiles / carMpg;
       const fuelCost = gallons * gasPrice;
       const parkingCost = parkingPerDay * totalDays;
       const carMaint = totalMiles * carMaintPerMile;
@@ -244,23 +575,32 @@
       const annualSavings = carAnnualCost - ebikeAnnualCost;
       const paybackYears = (annualSavings > 0) ? (ebikePrice / annualSavings) : null;
 
-      // Write outputs (defensive)
-      const cCost = $('carCost'); if (cCost) cCost.textContent = formatMoney(carAnnualCost);
-      const cBreak = $('carBreakdown'); if (cBreak) cBreak.innerHTML = `
-        Fuel ${formatMoney(fuelCost)} • Parking ${formatMoney(parkingCost)} • Maintenance ${formatMoney(carMaint)}<br>
-        Mileage ${isNaN(totalMiles) ? 0 : totalMiles.toLocaleString()} miles • ${isNaN(gallons) ? 0 : gallons.toLocaleString(undefined,{maximumFractionDigits:1})} gal/year
-      `;
-      const eCost = $('ebikeCost'); if (eCost) eCost.textContent = formatMoney(ebikeAnnualCost);
-      const eBreak = $('ebikeBreakdown'); if (eBreak) eBreak.innerHTML = `
-        Electricity ${formatMoney(elecCost)} • Battery ${formatMoney(batteryAnnual)} • Depreciation ${formatMoney(ebikeAnnualDep)} • Maintenance ${formatMoney(ebikeMaint)}<br>
-        Energy ${isNaN(energyKWh) ? 0 : energyKWh.toLocaleString(undefined,{maximumFractionDigits:1})} kWh/year
-      `;
-      const save = $('annualSavings'); if (save) save.textContent = formatMoney(annualSavings);
-      const pay = $('payback'); if (pay) pay.textContent = paybackYears ? `Approx payback: ${paybackYears.toFixed(1)} years` : 'No payback (e-bike costs more)';
-      const co2d = $('co2Diff'); const co2b = $('co2Breakdown');
+      // Write outputs
+      if ($('carCost')) $('carCost').textContent = formatMoney(carAnnualCost);
+      if ($('carBreakdown')) $('carBreakdown').innerHTML =
+        `Fuel ${formatMoney(fuelCost)} • Parking ${formatMoney(parkingCost)} • Maint ${formatMoney(carMaint)}<br>` +
+        `${Math.round(totalMiles).toLocaleString()} miles/year • ${gallons.toLocaleString(undefined,{maximumFractionDigits:1})} gal`;
+
+      if ($('ebikeCost')) $('ebikeCost').textContent = formatMoney(ebikeAnnualCost);
+      if ($('ebikeBreakdown')) $('ebikeBreakdown').innerHTML =
+        `Electric ${formatMoney(elecCost)} • Battery ${formatMoney(batteryAnnual)} • Depreciation ${formatMoney(ebikeAnnualDep)} • Maint ${formatMoney(ebikeMaint)}<br>` +
+        `${energyKWh.toLocaleString(undefined,{maximumFractionDigits:1})} kWh/year`;
+
+      if ($('annualSavings')) $('annualSavings').textContent = formatMoney(annualSavings);
+      if ($('payback')) $('payback').textContent =
+        paybackYears ? `Estimated payback: ${paybackYears.toFixed(1)} years` : 'Payback not reached (based on these assumptions)';
+
       const diff = carCO2g - ebikeCO2g;
-      if (co2d) co2d.textContent = (diff >= 0 ? '+' : '-') + formatKg(Math.abs(diff));
-      if (co2b) co2b.textContent = `Car ${formatKg(carCO2g)} • E-bike ${formatKg(ebikeCO2g)}`;
+      if ($('co2Diff')) $('co2Diff').textContent = (diff >= 0 ? '−' : '+') + formatKg(Math.abs(diff));
+      if ($('co2Breakdown')) $('co2Breakdown').textContent =
+        `Car ${formatKg(carCO2g)} • E-bike ${formatKg(ebikeCO2g)} (est.)`;
+
+      // Summary pill
+      if (pill){
+        const prefix = annualSavings >= 0 ? 'Saving' : 'Costs +';
+        pill.textContent = `${prefix} ${formatMoney(Math.abs(annualSavings))}/yr`;
+      }
+      if (srStatus) srStatus.textContent = 'Results updated.';
 
       // Save last result
       window._lastCalc = {
@@ -270,20 +610,19 @@
 
     } catch (err) {
       console.error('Calculation error', err);
-      alert('Calculation error (see console): ' + err.message);
+      showError('Something went wrong. Please check your inputs and try again.');
     }
   }
 
-  // Expose computeAll so parent pages on same-origin can call it if needed:
+  // Expose computeAll (handy for same-origin parent pages)
   window.computeAll = computeAll;
 
-  // Attach handlers (script is at end of body so DOM elements exist)
+  // Buttons
   const computeBtn = $('compute');
-  if (!computeBtn) {
-    console.error('Compute button not found (id="compute")');
-  } else {
-    computeBtn.addEventListener('click', computeAll);
-  }
+  if (computeBtn) computeBtn.addEventListener('click', computeAll);
+
+  const computeSticky = $('computeSticky');
+  if (computeSticky) computeSticky.addEventListener('click', computeAll);
 
   const exportBtn = $('exportCsv');
   if (exportBtn) {
@@ -295,30 +634,25 @@
       const csv = headers.join(',') + '\n' + vals.map(v => (v === null ? '' : String(v))).join(',');
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'commute_calc.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href = url; a.download = 'commute_calc.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
     });
   }
 
-  const shareBtn = $('shareBtn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', function(){
-      if (!window._lastCalc) { alert('Calculate first'); return; }
-      const r = window._lastCalc;
-      const text = `I could save ${formatMoney(r.annualSavings)}/yr and reduce CO₂ by ${formatKg(r.carCO2g - r.ebikeCO2g)} by switching to an e-bike (Ebike Connections).`;
-      const url = location.href + '#saved=' + encodeURIComponent(String(Math.round(r.annualSavings)));
-      if (navigator.share) {
-        navigator.share({ title:'E-bike savings', text, url }).catch(()=>{});
-      } else {
-        window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text + ' ' + url),'_blank');
-      }
+  // Live update on input (debounced)
+  let t;
+  const form = $('calcForm');
+  if (form){
+    form.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(computeAll, 250);
     });
   }
 
-  // initial compute
+  // initial compute (won't show results until basics filled)
   computeAll();
-  console.log('Commute calculator ready');
 })();
 </script>
-
 </body>
 </html>
